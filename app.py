@@ -1,4 +1,10 @@
 import sys
+if sys.version_info < (3, 10):
+    import tkinter as tk
+    root = tk.Tk(); root.withdraw()
+    tk.messagebox.showerror("Python desactualizado",
+        f"ColorProfiler requiere Python 3.10 o superior.\nVersione detectada: {sys.version.split()[0]}")
+    sys.exit(1)
 import threading
 import customtkinter as ctk
 import profiles as prof
