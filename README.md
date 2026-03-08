@@ -72,6 +72,17 @@ colorprofiler/
 
 ---
 
+## Changelog
+
+### v1.0.1
+- Fix: console windows no longer flash on each gamma change in the compiled build
+- Fix: profiles now persist between sessions when running as a compiled `.exe` (saved to `%APPDATA%\ColorProfiler\`)
+
+### v1.0.0
+- Initial release
+
+---
+
 ## License
 
 MIT
