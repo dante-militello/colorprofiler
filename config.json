@@ -1,0 +1,21 @@
+{
+  "active_profile": "Base",
+  "profiles": [
+    {
+      "name": "Base",
+      "gamma": 1.0,
+      "dvc": 0,
+      "hue": 0,
+      "monitor": 1,
+      "hotkey": "ctrl+alt+1"
+    },
+    {
+      "name": "Noche ARC RAIDERS",
+      "gamma": 2.25,
+      "dvc": 43,
+      "hue": 0,
+      "monitor": 1,
+      "hotkey": "ctrl+alt+0"
+    }
+  ]
+}
