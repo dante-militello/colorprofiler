@@ -74,6 +74,12 @@ colorprofiler/
 
 ## Changelog
 
+### v1.0.3
+- Splash screen on startup
+- Double-click a profile to activate it instantly
+- Hotkey modal redesigned: distinct color, Accept button, supports single-key hotkeys
+- Monitor dropdown defaults to Display 1
+
 ### v1.0.2
 - Hotkey capture replaced with a modal dialog — cleaner UX, no more accidental typing
 - Gamma slider debounced (120ms) — smoother live preview, less CPU usage
