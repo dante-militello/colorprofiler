@@ -74,6 +74,10 @@ colorprofiler/
 
 ## Changelog
 
+### v1.0.2
+- Hotkey capture replaced with a modal dialog — cleaner UX, no more accidental typing
+- Gamma slider debounced (120ms) — smoother live preview, less CPU usage
+
 ### v1.0.1
 - Fix: console windows no longer flash on each gamma change in the compiled build
 - Fix: profiles now persist between sessions when running as a compiled `.exe` (saved to `%APPDATA%\ColorProfiler\`)
