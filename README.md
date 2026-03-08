@@ -4,7 +4,7 @@
 
 <!-- screenshot -->
 <p align="center">
-  [<img src="screenshot.png" alt="ColorProfiler UI" width="420"/>](https://i.imgur.com/nn8Kp86.png)
+  <img src="https://i.imgur.com/nn8Kp86.png" alt="ColorProfiler UI" width="420"/>
 </p>
 
 ---
