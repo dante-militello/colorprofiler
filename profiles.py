@@ -1,7 +1,15 @@
 import json
 import os
 
-CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config.json")
+def _config_path() -> str:
+    import sys
+    if getattr(sys, "frozen", False):
+        base = os.path.join(os.environ.get("APPDATA", os.path.expanduser("~")), "ColorProfiler")
+        os.makedirs(base, exist_ok=True)
+        return os.path.join(base, "config.json")
+    return os.path.join(os.path.dirname(__file__), "config.json")
+
+CONFIG_PATH = _config_path()
 
 _DEFAULT = {
     "active_profile": "Normal",

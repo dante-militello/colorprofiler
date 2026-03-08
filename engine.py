@@ -49,11 +49,13 @@ def apply_gamma(gamma: float, monitor: int = 1):
         path = os.path.join(tempfile.gettempdir(), f"colorprofiler_{m}.cal")
         with open(path, "w") as f:
             f.write(cal)
-        subprocess.run([DISPWIN, f"-d{m}", path], capture_output=True)
+        subprocess.run([DISPWIN, f"-d{m}", path], capture_output=True,
+                       creationflags=subprocess.CREATE_NO_WINDOW)
 
 def reset_gamma(monitor: int = 1):
     for m in _targets(monitor):
-        subprocess.run([DISPWIN, f"-d{m}", "-c"], capture_output=True)
+        subprocess.run([DISPWIN, f"-d{m}", "-c"], capture_output=True,
+                       creationflags=subprocess.CREATE_NO_WINDOW)
 
 # ── DVC + Hue via NVAPI ───────────────────────────────────────────
 
