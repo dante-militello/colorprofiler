@@ -105,7 +105,7 @@ class Botonera(ctk.CTkToplevel):
             name = p["name"]
             is_active   = name == active_name
             is_selected = name == self._selected
-            ctk.CTkButton(
+            btn = ctk.CTkButton(
                 self._left,
                 text=("▶ " if is_active else "   ") + name,
                 anchor="w", width=148, height=34,
@@ -116,7 +116,9 @@ class Botonera(ctk.CTkToplevel):
                 font=ctk.CTkFont(size=12),
                 text_color="#ffffff" if (is_active or is_selected) else "#999999",
                 command=lambda n=name: self._select(n),
-            ).pack(pady=2, padx=6, fill="x")
+            )
+            btn.pack(pady=2, padx=6, fill="x")
+            btn.bind("<Double-Button-1>", lambda e, profile=p: self.on_activate(profile))
 
         ctk.CTkFrame(self._left, fg_color="#1e1e3a", height=1).pack(fill="x", padx=6, pady=6)
         ctk.CTkButton(
@@ -151,7 +153,8 @@ class Botonera(ctk.CTkToplevel):
         lbl("Monitor", 1)
         monitors = prof.get_monitors()
         self._mon_opts = ["All displays"] + ([f"Display {m['index']}" for m in monitors] or ["Display 1"])
-        self._monitor_var = ctk.StringVar(value=self._mon_opts[0])
+        default_mon = "Display 1" if "Display 1" in self._mon_opts else self._mon_opts[0]
+        self._monitor_var = ctk.StringVar(value=default_mon)
         self._monitor_var.trace_add("write", lambda *_: self._mark_dirty())
         ctk.CTkOptionMenu(r, variable=self._monitor_var, values=self._mon_opts,
                           width=180, height=30
@@ -290,64 +293,91 @@ class Botonera(ctk.CTkToplevel):
 
         modal = ctk.CTkToplevel(self)
         modal.overrideredirect(True)
-        modal.configure(fg_color="#0f0f1a")
+        modal.configure(fg_color="#0d1f0d")
         modal.attributes("-topmost", True)
         modal.resizable(False, False)
+
+        # border frame
+        border = ctk.CTkFrame(modal, fg_color="#1a4a1a", corner_radius=10)
+        border.pack(fill="both", expand=True, padx=2, pady=2)
 
         # center over parent
         self.update_idletasks()
         px, py = self.winfo_x(), self.winfo_y()
         pw, ph = self.winfo_width(), self.winfo_height()
-        mw, mh = 300, 160
+        mw, mh = 300, 190
         modal.geometry(f"{mw}x{mh}+{px + (pw - mw)//2}+{py + (ph - mh)//2}")
 
         ctk.CTkLabel(
-            modal, text="Asignar hotkey",
+            border, text="⌨  Asignar hotkey",
             font=ctk.CTkFont(size=13, weight="bold"),
-            text_color="#4fa8ff",
-        ).pack(pady=(20, 4))
+            text_color="#4aff88",
+        ).pack(pady=(16, 4))
 
         ctk.CTkLabel(
-            modal, text="Presioná la combinación de teclas",
-            font=ctk.CTkFont(size=11), text_color="#666",
+            border, text="Presioná una tecla o combinación",
+            font=ctk.CTkFont(size=11), text_color="#4a7a4a",
         ).pack()
 
-        combo_var = ctk.StringVar(value="...")
+        combo_var = ctk.StringVar(value="—")
         ctk.CTkLabel(
-            modal, textvariable=combo_var,
-            font=ctk.CTkFont(size=16, weight="bold"),
+            border, textvariable=combo_var,
+            font=ctk.CTkFont(size=18, weight="bold"),
             text_color="#ffffff",
-        ).pack(pady=12)
+        ).pack(pady=14)
 
-        ctk.CTkLabel(
-            modal, text="ESC para cancelar",
-            font=ctk.CTkFont(size=10), text_color="#333",
-        ).pack()
+        btn_row = ctk.CTkFrame(border, fg_color="transparent")
+        btn_row.pack()
 
         keys = []
         hook = [None]
+
+        def confirm():
+            if not keys:
+                return
+            kb.unhook(hook[0])
+            self._hotkey_var.set("+".join(keys))
+            self._mark_dirty()
+            modal.destroy()
+
+        def cancel():
+            kb.unhook(hook[0])
+            modal.destroy()
+
+        ctk.CTkButton(
+            btn_row, text="Aceptar", width=110, height=32,
+            fg_color="#1a4a1a", hover_color="#2a6a2a",
+            border_color="#3aaa3a", border_width=1,
+            font=ctk.CTkFont(size=12), text_color="#4aff88",
+            command=confirm,
+        ).pack(side="left", padx=(0, 8))
+
+        ctk.CTkButton(
+            btn_row, text="Cancelar", width=90, height=32,
+            fg_color="#1a0f0f", hover_color="#3a1515",
+            border_color="#4a1515", border_width=1,
+            font=ctk.CTkFont(size=12), text_color="#cc5555",
+            command=cancel,
+        ).pack(side="left")
+
+        ctk.CTkLabel(
+            border, text="ESC para cancelar",
+            font=ctk.CTkFont(size=10), text_color="#1a3a1a",
+        ).pack(pady=(8, 0))
 
         def on_key(event):
             if event.event_type != kb.KEY_DOWN:
                 return
             name = event.name
             if name == "esc":
-                kb.unhook(hook[0])
-                modal.destroy()
+                cancel()
                 return
             if name not in keys:
                 keys.append(name)
             combo_var.set("+".join(keys))
-            modifiers = {"ctrl", "alt", "shift", "windows", "left windows", "right windows"}
-            if name not in modifiers and any(k in modifiers for k in keys):
-                kb.unhook(hook[0])
-                result = "+".join(keys)
-                self._hotkey_var.set(result)
-                self._mark_dirty()
-                modal.destroy()
 
         hook[0] = kb.hook(on_key)
-        modal.protocol("WM_DELETE_WINDOW", lambda: (kb.unhook(hook[0]), modal.destroy()))
+        modal.protocol("WM_DELETE_WINDOW", cancel)
 
     # ─────────────────── SLIDER REAL-TIME ─────────────────────────
 
