@@ -19,7 +19,6 @@ class Botonera(ctk.CTkToplevel):
         self.on_quit = on_quit
         self._selected = None
         self._saved_values = {}              # referencia para dirty check
-        self._capturing = False
         self._drag_x = self._drag_y = 0
         self._build()
         self._position_near_tray()
@@ -194,13 +193,28 @@ class Botonera(ctk.CTkToplevel):
         # Hotkey
         lbl("Hotkey", 5)
         self._hotkey_var = ctk.StringVar()
-        self._hotkey_var.trace_add("write", lambda *_: self._mark_dirty())
-        self._hotkey_entry = ctk.CTkEntry(
-            r, textvariable=self._hotkey_var, width=210, height=30,
-            placeholder_text="Clic para asignar tecla...",
+        hk_frame = ctk.CTkFrame(r, fg_color="transparent")
+        hk_frame.grid(row=5, column=1, columnspan=2, sticky="w", pady=4)
+        self._hotkey_display = ctk.CTkLabel(
+            hk_frame, textvariable=self._hotkey_var,
+            width=140, height=30, anchor="w",
+            font=ctk.CTkFont(size=12, weight="bold"),
+            text_color="#4fa8ff",
         )
-        self._hotkey_entry.grid(row=5, column=1, columnspan=2, sticky="w", pady=4)
-        self._hotkey_entry.bind("<Button-1>", lambda e: self._start_hotkey_capture())
+        self._hotkey_display.pack(side="left", padx=(0, 8))
+        ctk.CTkButton(
+            hk_frame, text="⌨  Asignar", width=90, height=30,
+            fg_color="#1a1a2a", hover_color="#2a2a4a",
+            border_color="#3a3a6a", border_width=1,
+            font=ctk.CTkFont(size=12), text_color="#8888cc",
+            command=self._open_hotkey_modal,
+        ).pack(side="left", padx=(0, 4))
+        ctk.CTkButton(
+            hk_frame, text="✕", width=28, height=30,
+            fg_color="transparent", hover_color="#3a1515",
+            font=ctk.CTkFont(size=12), text_color="#555",
+            command=self._clear_hotkey,
+        ).pack(side="left")
 
         # Separator
         ctk.CTkFrame(r, fg_color="#1e1e3a", height=1).grid(
@@ -267,13 +281,49 @@ class Botonera(ctk.CTkToplevel):
 
     # ─────────────────── HOTKEY CAPTURE ──────────────────────────
 
-    def _start_hotkey_capture(self):
+    def _clear_hotkey(self):
+        self._hotkey_var.set("")
+        self._mark_dirty()
+
+    def _open_hotkey_modal(self):
         import keyboard as kb
-        if self._capturing:
-            return
-        self._capturing = True
-        self._hotkey_var.set("⌨  Presioná la combinación...")
-        self._hotkey_entry.configure(border_color="#2a7fff", fg_color="#0a1a2a")
+
+        modal = ctk.CTkToplevel(self)
+        modal.overrideredirect(True)
+        modal.configure(fg_color="#0f0f1a")
+        modal.attributes("-topmost", True)
+        modal.resizable(False, False)
+
+        # center over parent
+        self.update_idletasks()
+        px, py = self.winfo_x(), self.winfo_y()
+        pw, ph = self.winfo_width(), self.winfo_height()
+        mw, mh = 300, 160
+        modal.geometry(f"{mw}x{mh}+{px + (pw - mw)//2}+{py + (ph - mh)//2}")
+
+        ctk.CTkLabel(
+            modal, text="Asignar hotkey",
+            font=ctk.CTkFont(size=13, weight="bold"),
+            text_color="#4fa8ff",
+        ).pack(pady=(20, 4))
+
+        ctk.CTkLabel(
+            modal, text="Presioná la combinación de teclas",
+            font=ctk.CTkFont(size=11), text_color="#666",
+        ).pack()
+
+        combo_var = ctk.StringVar(value="...")
+        ctk.CTkLabel(
+            modal, textvariable=combo_var,
+            font=ctk.CTkFont(size=16, weight="bold"),
+            text_color="#ffffff",
+        ).pack(pady=12)
+
+        ctk.CTkLabel(
+            modal, text="ESC para cancelar",
+            font=ctk.CTkFont(size=10), text_color="#333",
+        ).pack()
+
         keys = []
         hook = [None]
 
@@ -283,31 +333,30 @@ class Botonera(ctk.CTkToplevel):
             name = event.name
             if name == "esc":
                 kb.unhook(hook[0])
-                self._capturing = False
-                self._hotkey_var.set("")
-                self._hotkey_entry.configure(
-                    border_color=("#565B5E", "#565B5E"),
-                    fg_color=("#F9F9FA", "#343638"))
+                modal.destroy()
                 return
             if name not in keys:
                 keys.append(name)
-            self._hotkey_var.set("+".join(keys))
+            combo_var.set("+".join(keys))
             modifiers = {"ctrl", "alt", "shift", "windows", "left windows", "right windows"}
             if name not in modifiers and any(k in modifiers for k in keys):
                 kb.unhook(hook[0])
-                self._capturing = False
-                self._hotkey_entry.configure(
-                    border_color=("#565B5E", "#565B5E"),
-                    fg_color=("#F9F9FA", "#343638"))
+                result = "+".join(keys)
+                self._hotkey_var.set(result)
+                self._mark_dirty()
+                modal.destroy()
 
         hook[0] = kb.hook(on_key)
+        modal.protocol("WM_DELETE_WINDOW", lambda: (kb.unhook(hook[0]), modal.destroy()))
 
     # ─────────────────── SLIDER REAL-TIME ─────────────────────────
 
     def _on_gamma(self, val):
         self._gamma_lbl.configure(text=f"{val:.2f}")
-        engine.apply_gamma(round(val, 2), self._get_monitor())
         self._mark_dirty()
+        if hasattr(self, "_gamma_after"):
+            self.after_cancel(self._gamma_after)
+        self._gamma_after = self.after(120, lambda: engine.apply_gamma(round(val, 2), self._get_monitor()))
 
     def _on_dvc(self, val):
         self._dvc_lbl.configure(text=str(int(val)))
