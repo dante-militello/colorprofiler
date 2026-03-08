@@ -3,7 +3,11 @@ import os
 import subprocess
 import tempfile
 
-DISPWIN = os.path.join(os.path.dirname(__file__), "dispwin.exe")
+def _base_dir() -> str:
+    import sys
+    return sys._MEIPASS if getattr(sys, "frozen", False) else os.path.dirname(__file__)
+
+DISPWIN = os.path.join(_base_dir(), "dispwin.exe")
 
 # ── Gamma via dispwin ─────────────────────────────────────────────
 
