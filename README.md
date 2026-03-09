@@ -44,7 +44,7 @@ Common use cases:
 ## Installation
 
 ```bash
-git clone https://github.com/youruser/colorprofiler
+git clone https://github.com/dante-militello/colorprofiler
 cd colorprofiler
 pip install -r requirements.txt
 python app.py
