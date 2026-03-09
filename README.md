@@ -9,6 +9,18 @@
 
 ---
 
+## What is it for?
+
+Some games don't let you adjust brightness or gamma from within the game, or their settings simply don't go high enough. ColorProfiler lets you boost gamma and digital vibrance at the driver level — outside the game — so you can see better in dark areas, spot enemies hiding in shadows, and get a sharper, more vivid image without touching the game's own options.
+
+Common use cases:
+- Crank up gamma in dark games (horror, survival, battle royale) to see in places others can't
+- Boost digital vibrance for more vivid colors and easier enemy spotting
+- Switch between a "gaming" profile and a "normal" profile instantly with a hotkey
+- Apply different settings per monitor without touching NVIDIA Control Panel every time
+
+---
+
 ## Features
 
 - **Gamma control** via ArgyllCMS dispwin (works where standard Windows APIs fail)
