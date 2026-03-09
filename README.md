@@ -86,6 +86,9 @@ colorprofiler/
 
 ## Changelog
 
+### v1.0.4
+- Display settings (gamma, vibrance, hue) are now reset to default when the app is closed
+
 ### v1.0.3
 - Splash screen on startup
 - Double-click a profile to activate it instantly
